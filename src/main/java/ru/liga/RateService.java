@@ -21,9 +21,6 @@ public class RateService {
         List<Rate> resultList = new ArrayList<>();
         String row;
 
-        fileName = fileName+".csv";
-        /*File csvFile = new File(getClass().getClassLoader().getResource(fileName).getFile());
-        BufferedReader csvReader = new BufferedReader(new FileReader(csvFile));*/
         InputStream in = getClass().getClassLoader().getResourceAsStream(fileName);
         BufferedReader csvReader = new BufferedReader(new InputStreamReader(in));
         while ((row = csvReader.readLine())!= null) {
@@ -47,17 +44,17 @@ public class RateService {
         LocalDate currentDate = nowDate.plusDays(countDays);
         int cntAddRate, j;
         for (cntAddRate = 1; cntAddRate<=countDays;cntAddRate++){
-            double curs = 0;
+            double cursNewRate = 0; // Прогнозируемый курс (пересчитывается для каждой даты - переименовано с "curs")
             int currentRate = historyRate.size() -7;
             while (currentRate<historyRate.size()) {
-                curs += historyRate.get(currentRate).getCurs();
+                cursNewRate += historyRate.get(currentRate).getCurs();
                 currentRate++;
             }
-            curs /= 7;
+            cursNewRate = cursNewRate / 7;
 
             historyRate.add(new Rate(historyRate.get(1).getNominal()
                     , nowDate.plusDays(cntAddRate)
-                    , curs
+                    , cursNewRate
                     , historyRate.get(1).getNameRate()));
         }
 
@@ -66,30 +63,38 @@ public class RateService {
 
     /**
      * Прогнозирование курса валют на указанный период
-     * @param fileName файл со списком валют, известных на текущий момент
+     * @param changeFile индекс файла со списком валют, известных на текущий момент
      * @param countDays кол-во дней для прогноза
      * @return прогноз валюты на неделю
      */
-    public void ExchangeRateForecast(String fileName, int countDays) throws IOException {
-        List<Rate> historyRate = readFromCsvFail(fileName);
-        DecimalFormat decimalFormat = new DecimalFormat( "#.##" );
-        historyRate = ExchangeRate(historyRate,countDays);
+    public void ExchangeRateForecast(int changeFile, int countDays) throws IOException {
+        if (countDays == -1) {
+            System.out.println("Ошибка выбора символа, попробуйте снова!");
+        } else {
+            String[] filesName = new String[] {"Dollar.csv","Lira.csv","Euro.csv"};
+            List<Rate> historyRate = readFromCsvFail(filesName[changeFile-1]);
+            DecimalFormat decimalFormat = new DecimalFormat("#.##");
 
-        Locale localeRu = new Locale("ru", "RU");
+            historyRate = ExchangeRate(historyRate, countDays);
 
-        if (countDays == 1){
-            System.out.println("Курс " + historyRate.get(1).getNameRate()+" на завтра");
-        }else {
-            System.out.println("Курс " + historyRate.get(1).getNameRate() +" на неделю");
+            Locale localeRu = new Locale("ru", "RU");
+            String nameRate = historyRate.get(1).getNameRate();
+            String textHeader = "";
+            if (countDays == 1) {
+                textHeader = String.format("Курс %s на завтра", nameRate);
+            } else {
+                textHeader = String.format("Курс %s на неделю", nameRate);
+            }
+            System.out.println(textHeader);
+
+            for (int currentRate = historyRate.size() - countDays; currentRate < historyRate.size(); currentRate++) {
+                LocalDate curDate = historyRate.get(currentRate).getDayDate();
+                String dayOfWeek = curDate.getDayOfWeek().getDisplayName(TextStyle.SHORT, localeRu);
+                String currentDate = curDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy", new Locale("ru")));
+                String currentCurs = decimalFormat.format(historyRate.get(currentRate).getCurs());
+                String newRow = String.format("\t%s %s - %s", dayOfWeek, currentDate, currentCurs);
+                System.out.println(newRow);
+            }
         }
-        for (int currentRate = historyRate.size()- countDays; currentRate < historyRate.size(); currentRate++ )
-        {
-
-            System.out.println("\t"+historyRate.get(currentRate).getDayDate().getDayOfWeek().getDisplayName(TextStyle.SHORT,localeRu)
-                                +" "+historyRate.get(currentRate).getDayDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy", new Locale("ru")))
-                                +" - "+decimalFormat.format(historyRate.get(currentRate).getCurs()));
-        }
-        System.out.println("");
     }
-
 }

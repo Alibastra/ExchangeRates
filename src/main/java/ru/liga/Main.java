@@ -6,52 +6,40 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
+    public static final String header = "\nВыберете одну из предоженных валют:" +
+                                        "\n\t 1 - Доллар США" +
+                                        "\n\t 2 - Турецкая лира" +
+                                        "\n\t 3 - Евро" +
+                                        "\nДля выхода q...";
+    public static final String line = " 1 - Курс валют на завтра" +
+                                    "\n 2 - Курс валют на 7 дней" +
+                                    "\n Для выхода q...";
+    public static final String errMsg = "Ошибка выбора символа, попробуйте снова!";
     public static void main(String[] args) throws IOException {
-        List<Rate> resultList = new ArrayList<>();
         String change = "";
-        String fileName = "";
         Scanner in;
         int countDays = 0;
-        System.out.println("Рады приветсвовать вас в нашем чудо сервисе по расчету курса валют!");
         while (!change.equals("q")) {
-            System.out.println("Выберете одну из предоженных:");
-            System.out.println("\t 1 - Доллар США" +
-                    "\n\t 2 - Турецкая лира" +
-                    "\n\t 3 - Евро" +
-                    "\nДля выхода q..." );
+            System.out.println(header);
             in = new Scanner(System.in);
             change = in.next();
-
-            if (change.equals("q"))
-                break;
-            if(change.equals("1") || change.equals("2") || change.equals("3"))
-            {
-
-                switch (change){
-                    case "1" : fileName = "Dollar"; break;
-                    case "2" : fileName = "Lira"; break;
-                    case "3" : fileName = "Euro"; break;
-                }
-                System.out.println(" 1 - Курс валют на завтра" +
-                        "\n 2 - Курс валют на 7 дней" +
-                        "\n Для выхода q..." );
+            if (change.equals("1")||change.equals("2")||change.equals("3")) {
+                int changeFile = Integer.parseInt(change);
+                System.out.println(line);
                 in = new Scanner(System.in);
                 change = in.next();
 
-                if (change.equals("q"))
-                    break;
-                if(change.equals("1") || change.equals("2"))
-                {
-                    if (change.equals("1"))
-                        countDays = 1;
-                    if (change.equals("2"))
-                        countDays = 7;
-                    new RateService().ExchangeRateForecast(fileName, countDays);
-                } else {
-                    System.out.println("Ошибка выбора символа, попробуйте снова!");
+                if (change.equals("1")) {
+                    countDays = 1;
+                    new RateService().ExchangeRateForecast(changeFile, countDays);
+                } else if (change.equals("2")) {
+                    countDays = 7;
+                    new RateService().ExchangeRateForecast(changeFile, countDays);
+                } else if(!change.equals("q")){
+                    System.out.println(errMsg);
                 }
-            } else {
-                System.out.println("Ошибка выбора символа, попробуйте снова!");
+            } else if (!change.equals("q")){
+                System.out.println(errMsg);
             }
         }
     }
