@@ -1,6 +1,8 @@
 package ru.liga;
 
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -28,7 +30,7 @@ public class RateService {
             if (!tokensCsv[0].equals("nominal")) {
                 Rate rate = new Rate(Integer.parseInt(tokensCsv[0])
                                     , LocalDate.parse(tokensCsv[1], DateTimeFormatter.ofPattern("d.MM.yyyy"))
-                                    , Double.parseDouble(tokensCsv[2].replace(',','.'))
+                                    , new BigDecimal(tokensCsv[2].replace(',','.'))
                                     , tokensCsv[3]);
                 resultList.add(rate);
             }
@@ -40,17 +42,18 @@ public class RateService {
     }
 
     private List<Rate> ExchangeRate(List<Rate> historyRate, int countDays){
+        int CountAlg = 7;
         LocalDate nowDate = LocalDate.now();
         LocalDate currentDate = nowDate.plusDays(countDays);
         int cntAddRate, j;
         for (cntAddRate = 1; cntAddRate<=countDays;cntAddRate++){
-            double cursNewRate = 0; // Прогнозируемый курс (пересчитывается для каждой даты - переименовано с "curs")
-            int currentRate = historyRate.size() -7;
+            BigDecimal cursNewRate = new BigDecimal("0"); // Прогнозируемый курс (пересчитывается для каждой даты - переименовано с "curs")
+            int currentRate = historyRate.size() -CountAlg;
             while (currentRate<historyRate.size()) {
-                cursNewRate += historyRate.get(currentRate).getCurs();
+                cursNewRate = cursNewRate.add(historyRate.get(currentRate).getCurs());
                 currentRate++;
             }
-            cursNewRate = cursNewRate / 7;
+            cursNewRate = cursNewRate.divide(BigDecimal.valueOf(CountAlg),4, RoundingMode.HALF_UP);
 
             historyRate.add(new Rate(historyRate.get(1).getNominal()
                     , nowDate.plusDays(cntAddRate)

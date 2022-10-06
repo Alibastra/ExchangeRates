@@ -1,15 +1,16 @@
 package ru.liga;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 
 public class Rate {
     private final Integer nominal;
     private final LocalDate dayDate;
-    private final double curs;
+    private final BigDecimal curs;
     private final String nameRate;
 
-    public Rate(Integer nominal, LocalDate dayDate, double curs, String nameRate) {
+    public Rate(Integer nominal, LocalDate dayDate, BigDecimal curs, String nameRate) {
         this.nominal = nominal;
         this.dayDate = dayDate;
         this.curs = curs;
@@ -22,7 +23,7 @@ public class Rate {
     public Integer getNominal(){
         return nominal;
     }
-    public double getCurs(){
+    public BigDecimal getCurs(){
         return curs;
     }
     public String getNameRate(){
