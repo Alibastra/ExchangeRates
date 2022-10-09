@@ -1,4 +1,4 @@
-package ru.liga;
+package ru.liga.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
